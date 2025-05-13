@@ -1,0 +1,1 @@
+"D:\Coding projects\Toy Quantum Circuit Editor\docs"  # Ensure logo.png exists in the directory
