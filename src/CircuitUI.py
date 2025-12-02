@@ -967,15 +967,68 @@ class GatePalette(QWidget):
         self.custom_gates_label.setStyleSheet("font-weight: bold; color: #333333;")
         scroll_layout.addWidget(self.custom_gates_label)
         
-        # Container for custom gates
-        self.custom_gates_layout = QVBoxLayout()
-        self.custom_gates_layout.setSpacing(5)
-        self.current_custom_row = QHBoxLayout()
-        self.current_custom_row.setSpacing(5)
-        self.custom_gates_layout.addLayout(self.current_custom_row)
-        self.custom_gate_count = 0
+        # Dropdown for custom gates
+        self.custom_gates_combo = QComboBox()
+        self.custom_gates_combo.setPlaceholderText("Select a custom gate...")
+        self.custom_gates_combo.setFixedHeight(40)
+        self.custom_gates_combo.setStyleSheet("""
+            QComboBox {
+                background-color: white;
+                border: 2px solid #cccccc;
+                border-radius: 4px;
+                padding: 5px;
+                color: #333333;
+                font-size: 12px;
+            }
+            QComboBox:hover {
+                border: 2px solid #4CAF50;
+            }
+            QComboBox::drop-down {
+                border: none;
+                width: 30px;
+            }
+            QComboBox::down-arrow {
+                image: url(none);
+                border-left: 5px solid transparent;
+                border-right: 5px solid transparent;
+                border-top: 5px solid #333333;
+                width: 0px;
+                height: 0px;
+            }
+            QComboBox QAbstractItemView {
+                background-color: white;
+                border: 2px solid #cccccc;
+                selection-background-color: #4CAF50;
+                selection-color: white;
+            }
+        """)
+        self.custom_gates_combo.currentTextChanged.connect(self.on_custom_gate_selected)
+        scroll_layout.addWidget(self.custom_gates_combo)
         
-        scroll_layout.addLayout(self.custom_gates_layout)
+        # Drag button for selected custom gate
+        self.drag_custom_btn = QPushButton("✋ Drag to Circuit")
+        self.drag_custom_btn.setFixedHeight(35)
+        self.drag_custom_btn.setEnabled(False)
+        self.drag_custom_btn.setStyleSheet("""
+            QPushButton:enabled {
+                background-color: #4CAF50;
+                color: white;
+                font-weight: bold;
+                border-radius: 4px;
+            }
+            QPushButton:disabled {
+                background-color: #cccccc;
+                color: #666666;
+            }
+        """)
+        self.drag_custom_btn.mousePressEvent = lambda event: self.start_custom_gate_drag(event)
+        scroll_layout.addWidget(self.drag_custom_btn)
+        
+        # Info label for custom gate details
+        self.custom_gate_info = QLabel("")
+        self.custom_gate_info.setWordWrap(True)
+        self.custom_gate_info.setStyleSheet("color: #666666; font-size: 10px; padding: 5px;")
+        scroll_layout.addWidget(self.custom_gate_info)
         
         # Add spacer at the bottom
         scroll_layout.addStretch()
@@ -1018,30 +1071,59 @@ class GatePalette(QWidget):
         print(f"Gate {gate_type} dragged successfully")
     
     def add_custom_gate(self, name: str, sequence: List[Tuple[str, List[int]]]):
-        # Add a custom gate to the palette.
+        # Add a custom gate to the dropdown palette.
         if name in self.custom_gates:
             return  # Gate already exists
         
         self.custom_gates[name] = sequence
         
-        # Create button for the custom gate
-        gate_button = QPushButton(name)
-        gate_button.setFixedSize(60, 40)  # Make consistent with other multi-qubit gates
-        gate_button.setObjectName(name)
-        gate_button.mousePressEvent = lambda event, g=name: self.buttonMousePressEvent(event, g)
-        
-        # Add button to custom gates layout with better organization
-        # Start a new row after every 2 gates
-        if self.custom_gate_count % 2 == 0 and self.custom_gate_count > 0:
-            self.current_custom_row = QHBoxLayout()
-            self.current_custom_row.setSpacing(5)
-            self.custom_gates_layout.addLayout(self.current_custom_row)
-        
-        self.current_custom_row.addWidget(gate_button)
-        self.custom_gate_count += 1
+        # Add to dropdown
+        self.custom_gates_combo.addItem(name)
         
         # Update custom gates label
         self.custom_gates_label.setText(f"Custom gates ({len(self.custom_gates)}):")
+    
+    def on_custom_gate_selected(self, gate_name):
+        # Handle custom gate selection from dropdown.
+        if not gate_name or gate_name not in self.custom_gates:
+            self.custom_gate_info.setText("")
+            self.drag_custom_btn.setEnabled(False)
+            return
+        
+        # Show gate info and enable drag button
+        sequence = self.custom_gates[gate_name]
+        num_qubits = max(max(op[1]) for op in sequence) + 1
+        num_ops = len(sequence)
+        info_text = f"<b>{gate_name}</b>: {num_qubits} qubit(s), {num_ops} operation(s)"
+        self.custom_gate_info.setText(info_text)
+        self.drag_custom_btn.setEnabled(True)
+    
+    def start_custom_gate_drag(self, event):
+        # Start dragging the selected custom gate.
+        if event.button() != Qt.MouseButton.LeftButton:
+            return
+        
+        gate_name = self.custom_gates_combo.currentText()
+        if not gate_name or gate_name not in self.custom_gates:
+            return
+        
+        self.create_custom_gate(gate_name)
+    
+    def remove_custom_gate(self, name: str):
+        # Remove a custom gate from the palette.
+        if name not in self.custom_gates:
+            return
+        
+        del self.custom_gates[name]
+        
+        # Remove from dropdown
+        index = self.custom_gates_combo.findText(name)
+        if index >= 0:
+            self.custom_gates_combo.removeItem(index)
+        
+        # Update label
+        self.custom_gates_label.setText(f"Custom gates ({len(self.custom_gates)}):")
+        self.custom_gate_info.setText("")
     
     def buttonMousePressEvent(self, event, gate_type):
         if event.button() == Qt.MouseButton.LeftButton:
