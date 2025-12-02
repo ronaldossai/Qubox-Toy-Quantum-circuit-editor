@@ -1,0 +1,8 @@
+[MASTER]
+ignore=.venv,venv,__pycache__
+
+[FORMAT]
+max-line-length=120
+
+[MESSAGES CONTROL]
+disable=C0301,line-too-long

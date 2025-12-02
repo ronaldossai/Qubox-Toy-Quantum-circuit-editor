@@ -3,14 +3,14 @@ from typing import List, Dict, Tuple, Optional, Union
 
 # Represents a single qubit in a specific state.
 class Qubit:
-    
+
     # Standard basis states
     STATE_0 = np.array([1, 0], dtype=complex)
     STATE_1 = np.array([0, 1], dtype=complex)
     # Uniform superposition with a poistive phase
-    STATE_PLUS = np.array([1/np.sqrt(2), 1/np.sqrt(2)], dtype=complex)  
+    STATE_PLUS = np.array([1/np.sqrt(2), 1/np.sqrt(2)], dtype=complex)
     # Uniform superposition with negative phase
-    STATE_MINUS = np.array([1/np.sqrt(2), -1/np.sqrt(2)], dtype=complex)  
+    STATE_MINUS = np.array([1/np.sqrt(2), -1/np.sqrt(2)], dtype=complex)
    
     # Initialize a qubit in a specified state.
     def __init__(self, initial_state="0"):
@@ -114,7 +114,7 @@ class QuantumGates:
                 cnot[target_state, target_state] = 0
                 cnot[i, target_state] = 1
                 cnot[target_state, i] = 1
-        
+     
         return cnot
     
     @staticmethod
@@ -223,7 +223,7 @@ class QuantumCircuit:
         for gate_type, target_qubits, params in self.gates:
             if gate_type in self.custom_gates:
                 # Handle custom gate by applying its sequence
-                for sub_gate_type, relative_targets, sub_params in self.custom_gates[gate_type]: # Use sub_params
+                for sub_gate_type, relative_targets, sub_params in self.custom_gates[gate_type]:  # Use sub_params
                     # Map relative qubit indices to actual indices
                     actual_targets = [target_qubits[i] for i in relative_targets]
                     
@@ -234,13 +234,13 @@ class QuantumCircuit:
                         if not sub_params or len(sub_params) != 1:
                              raise ValueError(f"Missing or incorrect parameters for {sub_gate_type} within custom gate '{gate_type}'")
                         if sub_gate_type == "Rx":
-                            gate_matrix = self._apply_single_qubit_gate(QuantumGates.Rx(sub_params[0]), actual_targets[0]) # Use sub_params
+                            gate_matrix = self._apply_single_qubit_gate(QuantumGates.Rx(sub_params[0]), actual_targets[0])  # Use sub_params
                         elif sub_gate_type == "Ry":
-                            gate_matrix = self._apply_single_qubit_gate(QuantumGates.Ry(sub_params[0]), actual_targets[0]) # Use sub_params
+                            gate_matrix = self._apply_single_qubit_gate(QuantumGates.Ry(sub_params[0]), actual_targets[0])  # Use sub_params
                         elif sub_gate_type == "Rz":
-                            gate_matrix = self._apply_single_qubit_gate(QuantumGates.Rz(sub_params[0]), actual_targets[0]) # Use sub_params
+                            gate_matrix = self._apply_single_qubit_gate(QuantumGates.Rz(sub_params[0]), actual_targets[0])  # Use sub_params
                         else:  # P gate
-                            gate_matrix = self._apply_single_qubit_gate(QuantumGates.P(sub_params[0]), actual_targets[0]) # Use sub_params
+                            gate_matrix = self._apply_single_qubit_gate(QuantumGates.P(sub_params[0]), actual_targets[0])   # Use sub_params
                     elif sub_gate_type == "CNOT":
                         gate_matrix = QuantumGates.controlled_not(actual_targets[0], actual_targets[1], self.num_qubits)
                     elif sub_gate_type == "SWAP":

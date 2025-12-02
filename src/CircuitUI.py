@@ -1085,18 +1085,28 @@ class GatePalette(QWidget):
     
     def on_custom_gate_selected(self, gate_name):
         # Handle custom gate selection from dropdown.
-        if not gate_name or gate_name not in self.custom_gates:
+        if not gate_name or not gate_name.strip() or gate_name not in self.custom_gates:
             self.custom_gate_info.setText("")
             self.drag_custom_btn.setEnabled(False)
             return
         
-        # Show gate info and enable drag button
-        sequence = self.custom_gates[gate_name]
-        num_qubits = max(max(op[1]) for op in sequence) + 1
-        num_ops = len(sequence)
-        info_text = f"<b>{gate_name}</b>: {num_qubits} qubit(s), {num_ops} operation(s)"
-        self.custom_gate_info.setText(info_text)
-        self.drag_custom_btn.setEnabled(True)
+        try:
+            # Show gate info and enable drag button
+            sequence = self.custom_gates[gate_name]
+            if not sequence or len(sequence) == 0:
+                self.custom_gate_info.setText("Invalid gate sequence")
+                self.drag_custom_btn.setEnabled(False)
+                return
+                
+            num_qubits = max(max(op[1]) for op in sequence) + 1
+            num_ops = len(sequence)
+            info_text = f"<b>{gate_name}</b>: {num_qubits} qubit(s), {num_ops} operation(s)"
+            self.custom_gate_info.setText(info_text)
+            self.drag_custom_btn.setEnabled(True)
+        except (ValueError, IndexError, KeyError) as e:
+            print(f"Error loading custom gate info: {e}")
+            self.custom_gate_info.setText("Error loading gate")
+            self.drag_custom_btn.setEnabled(False)
     
     def start_custom_gate_drag(self, event):
         # Start dragging the selected custom gate.
@@ -1104,10 +1114,14 @@ class GatePalette(QWidget):
             return
         
         gate_name = self.custom_gates_combo.currentText()
-        if not gate_name or gate_name not in self.custom_gates:
+        if not gate_name or not gate_name.strip() or gate_name not in self.custom_gates:
+            print("No valid custom gate selected")
             return
         
-        self.create_custom_gate(gate_name)
+        try:
+            self.create_custom_gate(gate_name)
+        except Exception as e:
+            print(f"Error creating custom gate drag: {e}")
     
     def remove_custom_gate(self, name: str):
         # Remove a custom gate from the palette.
