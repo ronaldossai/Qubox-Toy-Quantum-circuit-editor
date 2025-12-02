@@ -2,6 +2,7 @@ import unittest
 import numpy as np
 from src.CircuitBackend import QuantumGates, QuantumCircuit, Qubit
 
+
 class TestQuantumGates(unittest.TestCase):
     def test_hadamard_gate(self):
         """Test Hadamard gate operation"""
@@ -37,6 +38,7 @@ class TestQuantumGates(unittest.TestCase):
         expected = np.zeros(8)
         expected[7] = 1  # |111⟩ state
         np.testing.assert_array_almost_equal(state_vector, expected)
+
 
 if __name__ == '__main__':
     unittest.main()

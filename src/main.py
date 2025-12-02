@@ -1,8 +1,8 @@
 import sys
 from PyQt6.QtWidgets import QApplication
-from CircuitBackend import QuantumCircuit, Qubit
 from CircuitUI import MainWindow
-from QuboxWelcome import QuboxWelcome  
+from QuboxWelcome import QuboxWelcome
+
 
 # Start program
 if __name__ == "__main__":

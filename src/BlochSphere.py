@@ -1,13 +1,13 @@
 import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib import colors
-from mpl_toolkits.mplot3d import Axes3D
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QDialog, QLabel, QComboBox, QPushButton, QHBoxLayout
-from PyQt6.QtCore import Qt
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from PyQt6.QtWidgets import (
+    QWidget, QVBoxLayout, QDialog, QLabel, QComboBox, QPushButton, QHBoxLayout
+)
+from matplotlib.backends.backend_qt5agg import (
+    FigureCanvasQTAgg as FigureCanvas
+)
 from matplotlib.figure import Figure
 
-# Calculate Bloch sphere coordinates from qubit state
+
 def qubit_to_bloch(state_vector):
     # Convert a 2D state vector to Bloch sphere coordinates.
     # Ensure state is normalized
@@ -31,8 +31,9 @@ def qubit_to_bloch(state_vector):
     
     return [x, y, z]
 
-# Visualize Bloch sphere
-def create_bloch_sphere(ax, vectors=None, labels=None, title="Bloch Sphere"):
+
+def create_bloch_sphere(ax, vectors=None, labels=None,
+                        title="Bloch Sphere"):
     # Create a Bloch sphere visualization with optional state vectors.
     # Set up the axes
     ax.clear()
@@ -79,18 +80,24 @@ def create_bloch_sphere(ax, vectors=None, labels=None, title="Bloch Sphere"):
                 x, y, z = vector
                 color = colors_list[i % len(colors_list)]
                 # Draw the vector
-                ax.quiver(0, 0, 0, x, y, z, color=color, lw=2, arrow_length_ratio=0.1)
+                ax.quiver(
+                    0, 0, 0, x, y, z, color=color, lw=2,
+                    arrow_length_ratio=0.1
+                )
                 
                 # Add a label if provided
                 if labels and i < len(labels):
-                    ax.text(x*1.1, y*1.1, z*1.1, labels[i], color=color, fontsize=10)
+                    ax.text(
+                        x*1.1, y*1.1, z*1.1, labels[i],
+                        color=color, fontsize=10
+                    )
     
     # Set limits to contain the sphere
     ax.set_xlim([-1.5, 1.5])
     ax.set_ylim([-1.5, 1.5])
     ax.set_zlim([-1.5, 1.5])
 
-# BlochSphereWidget to display single or multiple qubits
+
 class BlochSphereWidget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -132,7 +139,9 @@ class BlochSphereWidget(QWidget):
         
         for qubit_idx in selected_qubits:
             # Get the reduced density matrix for this qubit
-            reduced_state = self.get_reduced_state(state_vector, qubit_idx, circuit.num_qubits)
+            reduced_state = self.get_reduced_state(
+                state_vector, qubit_idx, circuit.num_qubits
+            )
             
             # Convert to Bloch vector
             bloch_vector = qubit_to_bloch(reduced_state)
@@ -140,7 +149,10 @@ class BlochSphereWidget(QWidget):
             labels.append(f"q{qubit_idx}")
         
         # Clear and redraw
-        title = "Bloch Sphere" if len(selected_qubits) == 1 else "Multiple Qubits"
+        title = (
+            "Bloch Sphere" if len(selected_qubits) == 1
+            else "Multiple Qubits"
+        )
         create_bloch_sphere(self.ax, vectors, labels, title)
         self.canvas.draw()
     
@@ -169,10 +181,13 @@ class BlochSphereWidget(QWidget):
                     j_bit = int(j_binary[target_qubit])
                     
                     # Update the density matrix
-                    rho[i_bit, j_bit] += state_vector[i] * np.conj(state_vector[j])
+                    rho[i_bit, j_bit] += (
+                        state_vector[i] * np.conj(state_vector[j])
+                    )
         
         # Calculate the qubit state from the reduced density matrix
-        # This is an approximation - for more precise results, eigendecomposition would be better
+        # This is an approximation - for more precise results,
+        # eigendecomposition would be better
         qubit_state = np.zeros(2, dtype=complex)
         qubit_state[0] = np.sqrt(rho[0, 0])
         if rho[0, 1] != 0:
@@ -183,7 +198,7 @@ class BlochSphereWidget(QWidget):
         
         return qubit_state
 
-# Dialog for selecting qubits to visualize
+
 class QubitSelectorDialog(QDialog):
     def __init__(self, parent=None, num_qubits=1):
         super().__init__(parent)
@@ -196,7 +211,9 @@ class QubitSelectorDialog(QDialog):
         layout = QVBoxLayout()
         
         # Label
-        layout.addWidget(QLabel("Select up to 3 qubits to visualize on the Bloch sphere:"))
+        layout.addWidget(QLabel(
+            "Select up to 3 qubits to visualize on the Bloch sphere:"
+        ))
         
         # Qubit selection
         qubit_layout = QHBoxLayout()
@@ -240,4 +257,5 @@ class QubitSelectorDialog(QDialog):
                 if qubit_idx not in selected:  # Avoid duplicates
                     selected.append(qubit_idx)
         
-        return selected if selected else [0]  # Default to qubit 0 if nothing selected
+        # Default to qubit 0 if nothing selected
+        return selected if selected else [0]

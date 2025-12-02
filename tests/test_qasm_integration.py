@@ -1,5 +1,7 @@
 import unittest
+import numpy as np
 from src.CircuitBackend import QuantumCircuit
+
 
 class TestQASMIntegration(unittest.TestCase):
     def test_qasm_export_import(self):
@@ -39,6 +41,7 @@ class TestQASMIntegration(unittest.TestCase):
         qasm = circuit.to_qasm()
         self.assertIn("h q[0];", qasm)
         self.assertIn("cx q[0],q[1];", qasm)
+
 
 if __name__ == '__main__':
     unittest.main()
